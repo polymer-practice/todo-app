@@ -1,13 +1,33 @@
+<link rel="import" href="../../bower_components/shadycss/apply-shim.html">
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/form-task">
 
 <dom-module id="todo-app-app">
   <template>
     <style>
       :host {
         display: block;
+        --primary-color-task-form: #e91e63;
+        --secundary-color-task-form: #303030;
+      }
+
+      form-task {
+        --task-input: {
+          border: 1px solid pink;
+          height: 50px;
+        }
+
+        --task-button: {
+          max-width: 120px;
+          margin-left: 0;
+        }
       }
     </style>
-    <h2>Hello [[prop1]]!</h2>
+    <form-task
+    input-label="Escribe aquí tu tarea"
+    button-text="Nueva tarea"
+    on-create-task="createTask"
+    ></form-task>
   </template>
 
   <script>
@@ -24,6 +44,10 @@
             value: 'todo-app-app'
           }
         };
+      }
+
+      createTask(event) {
+        console.log(event);
       }
     }
 
