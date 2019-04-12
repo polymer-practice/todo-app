@@ -23,7 +23,11 @@
         }
       }
     </style>
-    <form-task></form-task>
+    <form-task
+    input-label="Escribe aquí tu tarea"
+    button-text="Nueva tarea"
+    on-create-task="createTask"
+    ></form-task>
   </template>
 
   <script>
@@ -40,6 +44,10 @@
             value: 'todo-app-app'
           }
         };
+      }
+
+      createTask(event) {
+        console.log(event);
       }
     }
 
