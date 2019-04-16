@@ -1,6 +1,9 @@
 <link rel="import" href="../../bower_components/shadycss/apply-shim.html">
 <link rel="import" href="../../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../../bower_components/form-task">
+<link rel="import" href="../../bower_components/task-repository">
+<link rel="import" href="../../bower_components/task-list">
+<link rel="import" href="../../bower_components/task-console">
 
 <dom-module id="todo-app-app">
   <template>
@@ -23,27 +26,141 @@
         }
       }
     </style>
-    <form-task
-    input-label="Escribe aquí tu tarea"
-    button-text="Nueva tarea"
-    on-create-task="createTask"
-    ></form-task>
+    <task-repository id="repository" limit="[[pageSize]]" offset="[[offset]]"></task-repository>
+    <form-task input-label="Escribe aquí tu tarea" button-text="Nueva tarea" on-create-task="createTask"></form-task>
+    <task-list task-list=[[taskList]] on-pending-event="_setTaskOnPending" on-cancel-event="_setTaskOnCancel"
+      on-done-event="_setTaskOnDone"></task-list>
+    <task-console id="console" title='Console output'></task-console>
   </template>
 
   <script>
-    /**
-     * @customElement
-     * @polymer
-     */
     class TodoAppApp extends Polymer.Element {
       static get is() { return 'todo-app-app'; }
       static get properties() {
         return {
-          prop1: {
-            type: String,
-            value: 'todo-app-app'
+          page: {
+            type: Number,
+            value: 0
+          },
+          total: {
+            type: Number,
+            value: 0
+          },
+          pageSize: {
+            type: Number,
+            value: 5
+          },
+          taskList: {
+            type: Array,
+            value: []
+          },
+          offset: {
+            type: Number,
+            computed: '_getOffset(page, total, pageSize)'
           }
         };
+      }
+
+      _createConsoleMsg(msg, color) {
+        const consoleNode = document.createElement('div');
+        const textNode = document.createTextNode(msg);
+        consoleNode.style.backgroundColor = color;
+        consoleNode.style.width = '100%';
+        consoleNode.style.color = 'white';
+        consoleNode.style.fontWeight = '500';
+        consoleNode.style.display = 'flex';
+        consoleNode.style.justifyContent = 'center';
+        consoleNode.style.alignItems = 'center';
+        consoleNode.style.fontSize = '24px';
+        consoleNode.style.height = '100px';
+
+        consoleNode.appendChild(textNode);
+        this.$.console.innerHTML = '';
+        this.$.console.appendChild(consoleNode);
+      }
+
+      constructor() {
+        super();
+        this.initPage = 0;
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.$.repository.addEventListener('page-event', event => {
+          this.total = event.detail.total;
+          this.page = Math.ceil(event.detail.offset / event.detail.limit);
+          this.set('taskList', event.detail.page);
+          this._createConsoleMsg('List of task obtained successfully', 'green')
+        });
+
+        this.$.repository.addEventListener('page-error', event => {
+          this._createConsoleMsg(event.detail.errorMsg, 'red');
+        });
+
+        this.$.repository.addEventListener('task-created', event => {
+          this._createConsoleMsg('Task created sucessfuly', 'green');
+
+          if (this.initPage === this.page) {
+            this.$.repository.getPage();
+          } else {
+            this.page = this.initPage
+          }
+        });
+
+        this.$.repository.addEventListener('update-task', event => {
+          const taskUpdated = event.detail.taskUpdated;
+          let msg;
+
+          if (taskUpdated.done) {
+            msg = `Task ${taskUpdated.title} mark as done`;
+          } else if (taskUpdated.canceled) {
+            msg = `Task ${taskUpdated.title} mark as cancel`;
+          } else {
+            msg = `Task ${taskUpdated.title} mark as pending`;
+          }
+
+          this._createConsoleMsg(msg, 'green');
+          this.$.repository.getPage();
+        });
+
+
+      }
+
+      _getOffset(page, total, pageSize) {
+        let result = page * pageSize;
+        return (result > total) ? (total - pageSize) : result;
+      }
+
+      _setTaskOnPending(event) {
+        this.$.repository.updateData = {
+          key: event.detail.key,
+          done: false,
+          canceled: false
+        }
+      }
+
+      _setTaskOnCancel(event) {
+        this.$.repository.updateData = {
+          key: event.detail.key,
+          done: false,
+          canceled: true
+        }
+      }
+
+      _setTaskOnCancel(event) {
+        this.$.repository.updateData = {
+          key: event.detail.key,
+          done: false,
+          canceled: true
+        }
+      }
+
+      _setTaskOnDone(event) {
+        this.$.repository.updateData = {
+          key: event.detail.key,
+          done: true,
+          canceled: false
+        }
       }
 
       createTask(event) {

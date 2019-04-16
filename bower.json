@@ -4,6 +4,9 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
     "form-task": "git@github.com:polymer-practice/form-task.git",
+    "task-list": "git@github.com:polymer-practice/task-list.git",
+    "task-repository": "git@github.com:polymer-practice/task-repository.git",
+    "task-console": "git@github.com:polymer-practice/task-console.git",
     "shadycss": "^1.9.1"
   },
   "devDependencies": {
