@@ -11,7 +11,10 @@
       :host {
         display: block;
         --primary-color-task-form: #e91e63;
-        --secundary-color-task-form: #303030;
+        --secundary-color-task-form: #ffffff;
+        --buttons-height: 40px;
+        --buttons-width: 100px;
+        --font-weight: 700;
       }
 
       form-task {
@@ -25,11 +28,71 @@
           margin-left: 0;
         }
       }
+
+      .buttons-set {
+        display: flex;
+        justify-content: flex-start;
+        flex-direction: column;
+      }
+
+      .buttons-set .back {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+      }
+
+      .buttons-set .forward {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+      }
+
+      .btn {
+        background-color: var(--primary-color-task-form);
+        color: var(--secundary-color-task-form);
+        height: var(--buttons-height);
+        width: var(--buttons-width);
+        border-radius: 4px;
+        font-weight: var(--font-weight);
+      }
+
+      .size-menu {
+        align-self: center;
+        border: solid 2px #ccc;
+        height: var(--buttons-height);
+        width: var(--buttons-width);
+        font-weight: var(--font-weight);
+      }
+
+      @media (min-width: 600px) {
+        .buttons-set {
+          display: flex;
+          justify-content: space-between;
+          flex-direction: row;
+        }
+      }
     </style>
     <task-repository id="repository" limit="[[pageSize]]" offset="[[offset]]"></task-repository>
     <form-task input-label="Escribe aquí tu tarea" button-text="Nueva tarea" on-create-task="createTask"></form-task>
     <task-list task-list=[[taskList]] on-pending-event="_setTaskOnPending" on-cancel-event="_setTaskOnCancel"
       on-done-event="_setTaskOnDone"></task-list>
+    <div class="buttons-set">
+      <div class="back">
+        <button type="button" class="btn" on-click="_goFirstPage">First page</button>
+        <button type="button" class="btn" on-click="_goPrevPage">Previous page</button>
+      </div>
+      <select class="size-menu" value="{{pageSize::change}}">
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+      </select>
+      <div class="forward">
+        <button type="button" class="btn" on-click="_goNextPage">Next page</button>
+        <button type="button" class="btn" on-click="_goLastPage">Last page</button>
+      </div>
+    </div>
     <task-console id="console" title='Console output'></task-console>
   </template>
 
@@ -163,8 +226,26 @@
         }
       }
 
+      _goFirstPage() {
+        this.page = 0;
+      }
+
+      _goPrevPage() {
+        this.page = (this.page > 0) ? this.page - 1: 0;
+      }
+
+      _goNextPage() {
+        const lastPage = Math.ceil(this.total/this.pageSize);
+        this.page = (this.page < lastPage) ? this.page + 1 : lastPage;
+      }
+
+      _goLastPage() {
+        const lastPage = Math.ceil(this.total/this.pageSize);
+        this.page = lastPage;
+      }
+
       createTask(event) {
-        console.log(event);
+        this.$.repository.newTaks = event.detail.taskDescription
       }
     }
 
